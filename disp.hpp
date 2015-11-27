@@ -61,11 +61,12 @@ using namespace std;
 class Disp
 {
 
-int speed=0;
-int out_counter=1, out_row_counter=0;
-int in_counter=1, in_row_counter=0;
-fstream fs,read;
-string buffer,reader,r_content;
+int speed=0, speed2=0;
+int out_counter=1, out_row_counter=0, out_scounter=1;
+int in_counter=1, in_row_counter=0, in_scounter=1;
+int row_counter_samufile=0;
+fstream fs,read,sread;
+string buffer,reader,r_content,out_content, sreader, s_content;
 
 public:
 
@@ -86,17 +87,27 @@ public:
     mx = 0;
     my = 0;
 
-    vi_w = newwin ( 10+2, max_x, 0, 0 );
-    vi_iw = newwin ( 10+2-1, max_x, 1, 0 );
+    /*vi_w = newwin ( 10+2, max_x, 0, 0 );
+    vi_iw = newwin ( 10+2-1, max_x, 1, 0 );*/
+    
+    vi_w = newwin ( 10+2, max_x/2, 0, 0 );
+    vi_iw = newwin ( 10+2-1, max_x/2, 1, 0 );
+    
+    vi_w_out = newwin ( 10+2, max_x/2, 0, max_x/2 );
+    vi_iw_out = newwin ( 10+2-1, max_x/2, 1, max_x/2 );
 
     log_w = newwin ( max_y- ( 10+2 ) - 3, max_x/2, 10+2, 0 );
     log_iw = newwin ( max_y- ( 10+2 ) - 3 -1, max_x/2, 10+2+1, 0 );
-
-    shell_w = newwin ( 3, max_x, 10+2+max_y- ( 10+2 ) - 3, 0 );
-    shell_iw = newwin ( 3-1, max_x, 10+2+max_y- ( 10+2 ) - 3-1, 0 );
-
+    
     slow_log_w = newwin ( max_y- ( 10+2 ) - 3, max_x/2, 10+2, max_x/2 );
     slow_log_iw = newwin ( max_y- ( 10+2 ) - 3 -1, max_x/2, 10+2+1, max_x/2 );
+
+    shell_w = newwin ( 3, max_x, 10+2+max_y- ( 10+2 ) - 3, 0 );
+    shell_iw = newwin ( 3-1, max_x, 10+2+max_y- ( 10+2 ) - 3-1, 0 );//batfai iroasos cucc
+
+    
+   
+   
 
     start_color();
     
@@ -105,11 +116,16 @@ public:
     init_pair ( 3, COLOR_WHITE, COLOR_BLUE );
     init_pair ( 4, COLOR_WHITE, COLOR_GREEN );
     init_pair ( 5, COLOR_WHITE, COLOR_CYAN );
+    init_pair ( 6, COLOR_WHITE, COLOR_YELLOW );
+
 
     wbkgd ( vi_w, COLOR_PAIR ( 2 ) );
     wbkgd ( vi_iw, COLOR_PAIR ( 1 ));
+    
+    wbkgd ( vi_w_out, COLOR_PAIR ( 3 ) );
+    wbkgd ( vi_iw_out, COLOR_PAIR ( 1 ));
 
-    wbkgd ( log_w, COLOR_PAIR ( 3 ) );
+    wbkgd ( log_w, COLOR_PAIR ( 6 ) );
     wbkgd ( log_iw, COLOR_PAIR ( 1 ) );
 
     wbkgd ( shell_w, COLOR_PAIR ( 5 ) );
@@ -123,6 +139,8 @@ public:
     scrollok ( log_iw, TRUE );
 
     scrollok ( slow_log_iw, TRUE );
+    scrollok ( vi_iw_out, TRUE );
+
 
     ui( );
 
@@ -132,6 +150,9 @@ public:
   {
     delwin ( vi_w );
     delwin ( vi_iw );
+    
+    delwin ( vi_w_out );
+    delwin ( vi_iw_out );
 
     delwin ( log_w );
     delwin ( log_iw );
@@ -158,6 +179,7 @@ public:
 
   void vi ( std::string msg )
   {
+	   
     if ( ncurses_mutex.try_lock() )
       {
         ui();
@@ -168,10 +190,15 @@ public:
         mvwprintw ( vi_w, 0, 0, " Amminadab's visual imagery " );
         wrefresh ( vi_iw );
         ncurses_mutex.unlock();
-      }
+      
+      
+	    	   
+	    	
+	    
+      } 	
   }
 
-  void vi ( char* vi_console )
+  void vi ( char* vi_console )//felso resz
   {
     if ( ncurses_mutex.try_lock() )
       {
@@ -203,10 +230,19 @@ public:
         mvwprintw ( vi_w, 0, 0, " Amminadab's visual imagery " );
         wrefresh ( vi_iw );
         ncurses_mutex.unlock();
+	
+	
       }
+    
+      
+          
+	  
+      
   }
+  
 
-  void log ( std::string msg )
+
+  void log ( std::string msg ) //bal also resz
   {
     ncurses_mutex.lock();
     ui();
@@ -214,6 +250,61 @@ public:
     msg =  msg + "\n";
     
     std:stringstream ss;
+    stringstream samuf;
+
+ 
+    
+    if(row_counter_samufile<1000)
+	    {
+	    	if(row_counter_samufile==0)
+	    	{
+	    	   
+	
+	    	    samuf << in_scounter;
+	    	    sreader = "kifi";
+	    
+	    	    sread.open(sreader.c_str(), ios_base::in);
+		
+	    	    row_counter_samufile++;
+	      	}
+	    	if(speed2==50)//jobb also
+	    	{
+		    getline(sread,s_content);		
+
+	    	    row_counter_samufile++;
+		    speed2=0;
+		
+		    s_content=s_content + "\n"; 
+
+		    waddstr ( vi_iw_out, s_content.c_str());
+
+
+		        		    wrefresh ( vi_iw_out );
+
+	    	}
+	    	speed2++;
+	    
+	    }
+
+	    else if(row_counter_samufile==1000)
+	    {
+	      sread.close();
+	    
+	    	//samuf.str("");
+	    	//samuf.clear();
+	
+	    	//in_counter++;
+
+	    	samuf << in_scounter-1;
+	    	sreader = samuf.str();
+	    
+	    	
+
+	      remove(sreader.c_str());
+
+	    	row_counter_samufile=0;
+	    }
+
   
     if(msg.compare("Saving Samu...\n")==0)  
     {	
@@ -297,11 +388,13 @@ public:
 	    	reader = ss.str() + ".txt";
 	    
 	    	remove(reader.c_str());
+		
 
 	    	in_row_counter=0;
 	    }
     	}
     }	
+	
     
     waddstr (log_iw, msg.c_str() );
     mvwprintw ( log_w, 0, 0, " Amminadab's answers " );
@@ -358,15 +451,23 @@ private:
         mx = max_x;
         my = max_y;
 	
-	wresize ( vi_w, 10+2, mx );
+	wresize ( vi_w, 10+2, mx/2 );
         mvwin ( vi_w, 0, 0 );
         werase ( vi_w );
 
-        wresize ( vi_iw, 10+2-1, mx );
-        mvwin ( vi_iw, 0+1, 0 );
+        wresize ( vi_iw, 10+2-1, mx/2 );
+        mvwin ( vi_iw, 1, 0 );
         werase ( vi_iw );
+	
+	wresize ( vi_w_out, 10+2, mx/2 );
+        mvwin ( vi_w_out, 0, mx/2 );
+        werase ( vi_w_out );
 
-        wresize ( log_w, my- ( 10+2 )-3, mx/2);
+        wresize ( vi_iw_out, 10+2-1, mx/2 );
+        mvwin ( vi_iw_out, 1, mx/2 );
+        werase ( vi_iw_out );
+
+        wresize ( log_w, my- ( 10+2 )-3, mx/2);//mert 2 vel osztjuk
         mvwin ( log_w, 10+2, 0 );
         werase ( log_w );
 
@@ -390,7 +491,10 @@ private:
         mvwin ( shell_iw, 10+2+my- ( 10+2 ) - 3+1, 0 );
         werase ( shell_iw );
 
-        mvwprintw ( vi_w, 0, 0, " Amminadab's visual imagery " );
+        mvwprintw ( vi_w, 0, 0, "Amminadab's visual imagery " );
+	
+        mvwprintw ( vi_w_out, 0, 0, "Amminadab's out " );
+
 
         mvwprintw ( log_w, 0, 0, "Amminadab's answers" );
 
@@ -402,6 +506,9 @@ private:
         wrefresh ( vi_w );
         wrefresh ( vi_iw );
 
+	wrefresh ( vi_w_out );
+        wrefresh ( vi_iw_out );
+	
         wrefresh ( log_w );
         wrefresh ( log_iw );
 
@@ -420,6 +527,8 @@ private:
   WINDOW *shell_w, *shell_iw;
 
   WINDOW *slow_log_w, *slow_log_iw;
+  WINDOW *vi_w_out, *vi_iw_out;
+
   int mx {0}, my {0};
 };
 
